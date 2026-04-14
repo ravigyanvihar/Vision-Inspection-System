@@ -1,42 +1,69 @@
-YOLOv8 Training & Integration Guide
-To use AI-powered inspection in this system, you need to train a YOLOv8 model and place it in the correct recipe folder. This system is designed to load models dynamically per recipe.
+🏭 Industrial Vision Inspection Framework
+A High-Performance, Low-CapEx AI Inspection System
 
-1. Prepare Your Dataset
-Collect Images: Take 100-200 photos of your part in the actual factory lighting. Include "Good" parts and "Bad" parts.
+This project is a Flask-based web application designed to bring high-end computer vision to the shop floor using standard hardware. It bridges the gap between Python 3.10, AI (YOLOv8), and Industrial PLCs (Modbus TCP).
 
-Labeling: Use Roboflow or Label Studio.
+🏗️ System Architecture
+The system operates on a "Two-Pass" inspection logic:
 
-Create a class called anchor (if using AI for alignment).
+Pass 1 (Alignment): Uses OpenCV Template Matching to find an "Anchor" and calculate part misalignment.
 
-Create classes for your specific parts (e.g., bolt, washer, scratch).
+Pass 2 (Inspection): Runs AI (YOLO) and Math (Gray Average/Color) tools on the shifted coordinates to ensure 100% accuracy even if the part moves.
 
-Export: Export your dataset in YOLOv8 format.
+🔌 Hardware Setup
+Camera: Supports any ONVIF-compatible IP Camera, USB Webcam, or Raspberry Pi Camera. (RTSP streams are handled via OpenCV).
 
-2. Train the Model
-The fastest way to train is using Google Colab (GPU). You can use this simple Python script:
+Processor: Raspberry Pi 4 (8GB) or any PC running Python 3.10.
 
-Python
-from ultralytics import YOLO
+PLC: Any controller supporting Modbus TCP (Siemens S7, Delta, Schneider, etc.).
 
-# Load a pretrained 'nano' model (fastest for Raspberry Pi)
-model = YOLO('yolov8n.pt')
+Printer: Industrial ZPL-compatible network printer (optional).
 
-# Train the model
-results = model.train(
-    data='path/to/your/data.yaml',
-    epochs=50,
-    imgsz=640,
-    device=0  # Use 'cpu' if no GPU available
-)
-3. Deployment (Copy & Paste)
-Once training is finished, YOLO will create a file named best.pt in the runs/detect/train/weights/ folder.
+📦 Software Installation
+1. Environment Setup
+Ensure you are using Python 3.10 for maximum library stability.
 
-To integrate it into this software, follow this exact folder structure:
+2. Configure PLC & Camera
+Edit the SYSTEM_SETTINGS.json (or the top of app.py):
 
-Navigate to your project folder.
+Camera URL: rtsp://admin:password@192.168.1.50:554/stream (For ONVIF/IP Cameras).
 
-Go to recipes/ -> [Your_Recipe_Name]/.
+PLC IP: 192.168.1.10
 
-Create a folder named yolo.
+🧠 YOLO AI Integration Guide
+1. Training
+Train your model using YOLOv8 Nano (yolov8n.pt) for the best speed on edge devices.
 
-Paste your best.pt file inside that folder and rename it to model.pt.
+Classes: Include an anchor class for alignment and specific defect classes (e.g., scratch, missing_bolt).
+
+2. Deployment (The Recipe Folder)
+For every new part, create a folder in recipes/. The system loads these dynamically:
+
+Example classes.txt:
+
+🖥️ How to Run
+Start the server:
+
+Open your browser to: http://127.0.0.1:5000
+
+Note: Locked to localhost for shop-floor security.
+
+Operation:
+
+The PLC sends a "Trigger" signal via Modbus.
+
+Python captures the image from the ONVIF/IP camera.
+
+The system runs Pass 1 (Align) and Pass 2 (Inspect).
+
+Results are written back to PLC registers and saved to a 30-day rolling history.
+
+📊 Analytics & Traceability
+Master-Detail View: Handles 1000+ inspections per shift without crashing the browser.
+
+Failure Breakdown: Automatically generates charts showing which specific "Box" or "Tool" is failing most frequently.
+
+Auto-Maintenance: Automatically deletes images older than 30 days to protect SD card health.
+
+⚖️ License & Contributions
+This is an open-source project created to demonstrate that high-quality vision inspection can be achieved with standard IP cameras and smart logic. Feel free to fork, modify, and use in your own local industries!
