@@ -11,7 +11,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # --- CONFIGURATION ---
 HTTP_USER = "onvif"
-HTTP_PASS = "Sunbeam_12"
+HTTP_PASS = "onvif_pass"
 
 URL_TEMPLATE = "https://{ip}/onvif-http/snapshot?Profile_1"
 
